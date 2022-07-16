@@ -19,13 +19,12 @@ tf.random.set_seed(1)
 class Run:
 
    No_PCGrad = UpperLowerBound()
-
    PCGrad = UpperLowerBound()
 
    epochs = 200
+   batch_size = 256
 
-
-   def __init__(self, batch_size = 256):
+   def __init__(self):
 
       self.batch_size = batch_size
       self.No_PCGrad_model = Run.No_PCGrad.model 
@@ -37,6 +36,10 @@ class Run:
    @classmethod
    def set_epochs(cls, epoches):
       cls.epochs = epoches
+
+   @classmethod
+   def set_batch_size(cls, batch_size):
+      cls.batch_size = batch_size
 
    def run_no_pcgrad(self):
       

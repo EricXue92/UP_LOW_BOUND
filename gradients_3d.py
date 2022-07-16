@@ -20,15 +20,12 @@ from matplotlib.ticker import MaxNLocator
 # plot_data(file_name = 'pcgrad_pred.csv')
 # plot_data(file_name = 'pcgrad_pred.csv', x ='Coverage_rate')
  
-
-def total_gradients(width , coverage):
-	return np.square(width) + coverage
-
+# val_acc is on the validation data, val_loss is a good indication of how the model performs on unseen data.
 def plot_3d(file_name = 'history_no_pcgrad_history.pkl'):
 	dict_data = pd.read_pickle('history_no_pcgrad_history.pkl')  
 	df = pd.DataFrame(dict_data)
-	width, coverage = df['mpiw'], df['coverage']
-	z = total_gradients(width, coverage)
+	width, coverage = df['val_mpiw'], df['val_coverage']
+	val_loss = df['val_loss']
 	fig = plt.figure(figsize=(10,6))
 	ax = fig.add_subplot(111, projection='3d')
 
@@ -36,22 +33,28 @@ def plot_3d(file_name = 'history_no_pcgrad_history.pkl'):
 	#ax.scatter(width, coverage, z)
 
 	#ax.plot_trisurf(width, coverage, z, linewidth=0, antialiased=True)
-	#surf = ax.plot_trisurf(width-np.mean(width), coverage-np.mean(coverage), z, cmap=cm.jet, linewidth=0)
-	surf = ax.plot_trisurf(width, coverage, z, cmap=cm.jet, linewidth=0)
+	#surf = ax.plot_trisurf(width-np.mean(width), coverage-np.mean(coverage), val_loss, cmap=cm.jet, linewidth=0)
+	surf = ax.plot_trisurf(width, coverage, val_loss, cmap=cm.jet, linewidth=0)
 	fig.colorbar(surf)
-	ax.set_title('Grediant')
-	plt.savefig(f'{file_name}_3D.png', dpi = 600)
-	ax.xaxis.set_major_locator(MaxNLocator(14))
+	ax.set_title('Val_Loss')
+	ax.set_xlabel('val_width')
+	ax.set_ylabel('val_coverage')
+
+	ax.xaxis.set_major_locator(MaxNLocator(10))
 	ax.yaxis.set_major_locator(MaxNLocator(10))
 	ax.zaxis.set_major_locator(MaxNLocator(10))
 	fig.tight_layout()
+	plt.savefig(f'{file_name}_3D.png', dpi = 600)
 	plt.show()
 
-# plot_3d()
-plot_3d('history_pcgrad_history.pkl')
+plot_3d()
+# plot_3d('history_pcgrad_history.pkl')
+
+
 
 
 # # To show the same y_slim as history_no_pcgrad_histor
+
 # dict_data = pd.read_pickle('history_pcgrad_history.pkl')
 # df = pd.DataFrame(dict_data)
 # plt.ylim(0, 1.4)

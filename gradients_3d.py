@@ -20,9 +20,6 @@ ax = plt.axes(projection='3d')
 
 ax.plot_trisurf(width, coverage, z, linewidth=0, antialiased=False)
 
-# ax.plot_surface(width, coverage, z, rstride = 1, 
-# 					cstride =1 , cmap ='viridis', 
-# 					edgecolor = 'none')
 ax.set_title('surface')
 plt.savefig('3D.png')
 plt.show()

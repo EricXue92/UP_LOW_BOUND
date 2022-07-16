@@ -26,7 +26,6 @@ class Run:
 
    def __init__(self):
 
-      self.batch_size = batch_size
       self.No_PCGrad_model = Run.No_PCGrad.model 
       self.PCGrad_model = Run.PCGrad.model
 

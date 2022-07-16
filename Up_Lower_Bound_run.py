@@ -21,7 +21,7 @@ class Run:
    No_PCGrad = UpperLowerBound()
    PCGrad = UpperLowerBound()
 
-   epochs = 200
+   epochs = 2000
    batch_size = 256
 
    def __init__(self):
@@ -125,7 +125,7 @@ class Run:
       sns.set_style("ticks")
       plt.title(title)
       plt.xlabel("Epochs")
-      sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw']])
+      sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw','val_loss']])
       plt.savefig(f'{title}.png', dpi = 600)
       plt.clf()
       # plt.show()

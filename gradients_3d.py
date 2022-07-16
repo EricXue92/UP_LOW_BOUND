@@ -35,3 +35,20 @@ def plot_3d(file_name = 'pcgrad_pred.csv'):
 plot_3d()
 plot_3d('no_pcgrad_pred.csv')
 
+
+# To show the same y_slim as history_no_pcgrad_histor
+dict_data = pd.read_pickle('history_pcgrad_history.pkl')
+df = pd.DataFrame(dict_data)
+plt.ylim(0, 1.4)
+fig = plt.figure(figsize=(10,6))
+sns.set_style("ticks")
+plt.xlabel("Epochs")
+ax = sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw']])
+ax.set(ylim=(0, 1.4))
+plt.savefig(f'history_pcgrad_ylim_png', dpi = 600)
+plt.show()
+
+
+
+
+

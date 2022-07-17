@@ -21,14 +21,14 @@ class Run:
    No_PCGrad = UpperLowerBound()
    PCGrad = UpperLowerBound()
 
-   epochs = 100
+   epochs = 300
    batch_size = 256
 
    #Stop training when a monitored metric has stopped improving
    early_stopping = callbacks.EarlyStopping(
-      monitor = 'val_loss',
+      monitor = 'coverage_width_rate',
       min_delta=0.001,  # an absolute change of less than min_delta, will count as no improvement.
-      patience=10,  # Number of epochs with no improvement after which training will be stopped
+      patience=300,  # Number of epochs with no improvement after which training will be stopped
       restore_best_weights=True
    )
 
@@ -36,7 +36,6 @@ class Run:
 
       self.No_PCGrad_model = Run.No_PCGrad.model 
       self.PCGrad_model = Run.PCGrad.model
-
       self.result = []
       self.opt = optimizers.Adam()
 
@@ -54,19 +53,18 @@ class Run:
 
       self.No_PCGrad_model.compile(optimizer=self.opt,
       loss = [self.No_PCGrad_model.selective_up, self.No_PCGrad_model.selective_low, self.No_PCGrad_model.up_penalty, self.No_PCGrad_model.low_penalty, self.No_PCGrad_model.coverage_penalty],
-      metrics = [self.No_PCGrad_model.coverage, self.No_PCGrad_model.mpiw])
+      metrics = [self.No_PCGrad_model.coverage, self.No_PCGrad_model.mpiw, self.No_PCGrad_model.coverage_width_rate])
 
       history_no_pcgrad = self.No_PCGrad_model.fit(Run.No_PCGrad.X_train, Run.No_PCGrad.y_train, 
       validation_data = (Run.No_PCGrad.X_test, [Run.No_PCGrad.y_test[:,0], Run.No_PCGrad.y_test[:,1], Run.No_PCGrad.y_test[:,-1]]),
       batch_size=self.batch_size, 
       epochs= self.epochs,
-      callbacks=[Run.early_stopping], 
+      #callbacks=[Run.early_stopping], 
       verbose=1)
 
       # Save the training history 
       with open('history_no_pcgrad_history.pkl', 'wb') as handle:
          pickle.dump(history_no_pcgrad.history, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
       self.plot_training('history_no_pcgrad_history.pkl')
 
       no_pcgrad_pred = self.No_PCGrad_model.predict(Run.No_PCGrad.X_test)
@@ -88,13 +86,13 @@ class Run:
 
       self.PCGrad_model.compile(optimizer=self.opt,
       loss = [self.PCGrad_model.selective_up, self.PCGrad_model.selective_low, self.PCGrad_model.up_penalty, self.PCGrad_model.low_penalty, self.PCGrad_model.coverage_penalty],
-      metrics = [self.PCGrad_model.coverage, self.PCGrad_model.mpiw])
+      metrics = [self.PCGrad_model.coverage, self.PCGrad_model.mpiw, self.PCGrad_model.coverage_width_rate])
 
       history_pcgrad = self.PCGrad_model.fit(Run.PCGrad.X_train, Run.PCGrad.y_train, 
       validation_data = (Run.PCGrad.X_test, [Run.PCGrad.y_test[:,0], Run.PCGrad.y_test[:,1], Run.PCGrad.y_test[:,-1]]),
       batch_size=self.batch_size, 
       epochs= self.epochs,
-      callbacks=[Run.early_stopping], 
+      #callbacks=[Run.early_stopping], 
       verbose=1)
 
       with open('history_pcgrad_history.pkl', 'wb') as handle:
@@ -128,10 +126,11 @@ class Run:
       sns.set_style("ticks")
       plt.title(title)
       plt.xlabel("Epochs")
-      sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw','val_loss']])
+      sns.lineplot(data=df[ ['coverage', 'mpiw', 'coverage_width_rate', 'val_coverage', 'val_mpiw','val_loss', 'val_coverage_width_rate']])
       plt.savefig(f'{title}.png', dpi = 600)
       plt.clf()
       # plt.show()
+      
 
 def main():
 
@@ -141,7 +140,7 @@ def main():
 
 
 if __name__ == "__main__":
-   #Run.epochs = 1000
+   Run.epochs = 1000
    #Run.batch_size = 1000
 
    obj = Run()

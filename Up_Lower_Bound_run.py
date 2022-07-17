@@ -24,6 +24,14 @@ class Run:
    epochs = 100
    batch_size = 256
 
+   #Stop training when a monitored metric has stopped improving
+   early_stopping = callbacks.EarlyStopping(
+      monitor = 'val_loss',
+      min_delta=0.001,  # an absolute change of less than min_delta, will count as no improvement.
+      patience=10,  # Number of epochs with no improvement after which training will be stopped
+      restore_best_weights=True
+   )
+
    def __init__(self):
 
       self.No_PCGrad_model = Run.No_PCGrad.model 
@@ -44,13 +52,6 @@ class Run:
       
       self.No_PCGrad_model.init_arguments()
 
-      early_stopping = callbacks.EarlyStopping(
-         monitor = 'mpiw',
-         min_delta=0.0000000001,  # an absolute change of less than min_delta, will count as no improvement.
-         patience=500,  # Number of epochs with no improvement after which training will be stopped
-         restore_best_weights=True
-      )
-
       self.No_PCGrad_model.compile(optimizer=self.opt,
       loss = [self.No_PCGrad_model.selective_up, self.No_PCGrad_model.selective_low, self.No_PCGrad_model.up_penalty, self.No_PCGrad_model.low_penalty, self.No_PCGrad_model.coverage_penalty],
       metrics = [self.No_PCGrad_model.coverage, self.No_PCGrad_model.mpiw])
@@ -59,7 +60,7 @@ class Run:
       validation_data = (Run.No_PCGrad.X_test, [Run.No_PCGrad.y_test[:,0], Run.No_PCGrad.y_test[:,1], Run.No_PCGrad.y_test[:,-1]]),
       batch_size=self.batch_size, 
       epochs= self.epochs,
-      #callbacks=[early_stopping], 
+      callbacks=[Run.early_stopping], 
       verbose=1)
 
       # Save the training history 
@@ -74,9 +75,10 @@ class Run:
       df['y_true'] = Run.No_PCGrad.y_test[:,0]
       df['Width'] = (df['Upbound']-df['Lowerbound'])
       df['NMPIW'] = (df['Upbound']-df['Lowerbound'])/ Run.No_PCGrad.range
+      df['Coverage_rate/Width'] = df['Coverage_rate']/df['Width']
       #df['Flag']= np.where((df['Upbound'] >= df['y_true']) & (df['Lowerbound'] <= df['y_true']), 1, 0)  
 
-      self.result.append({'Coverage_rate':np.mean(df['Coverage_rate']), 'NMPIW':np.mean(df['NMPIW'])})
+      self.result.append({'Coverage_rate':np.mean(df['Coverage_rate']), 'NMPIW':np.mean(df['NMPIW']),'Coverage_rate/Width':np.mean(df['Coverage_rate/Width'])})
       
       df.to_csv('no_pcgrad_pred.csv')
    
@@ -92,7 +94,7 @@ class Run:
       validation_data = (Run.PCGrad.X_test, [Run.PCGrad.y_test[:,0], Run.PCGrad.y_test[:,1], Run.PCGrad.y_test[:,-1]]),
       batch_size=self.batch_size, 
       epochs= self.epochs,
-      #callbacks=[early_stopping], 
+      callbacks=[Run.early_stopping], 
       verbose=1)
 
       with open('history_pcgrad_history.pkl', 'wb') as handle:
@@ -106,9 +108,10 @@ class Run:
       df['y_true'] = Run.PCGrad.y_test[:,0]
       df['Width'] = (df['Upbound']-df['Lowerbound'])
       df['NMPIW'] = (df['Upbound']-df['Lowerbound'])/ Run.No_PCGrad.range
+      df['Coverage_rate/Width'] = df['Coverage_rate']/df['Width']
       #df['Flag']= np.where((df['Upbound'] >= df['y_true']) & (df['Lowerbound'] <= df['y_true']), 1, 0) 
 
-      self.result.append({'Coverage_rate':np.mean(df['Coverage_rate']), 'NMPIW':np.mean(df['NMPIW'])})
+      self.result.append({'Coverage_rate':np.mean(df['Coverage_rate']), 'NMPIW':np.mean(df['NMPIW']),'Coverage_rate/Width':np.mean(df['Coverage_rate/Width']) })
 
       #Save predicted values 
       df.to_csv('pcgrad_pred.csv')
@@ -136,13 +139,11 @@ def main():
    obj.run_pcgrad()
    obj.print_comparison()
 
-   # obj.run_no_pcgrad()
-   # obj.run_pcgrad()
-   # obj.print_comparison()
-
 
 if __name__ == "__main__":
-   Run.epochs = 20
+   #Run.epochs = 1000
+   #Run.batch_size = 1000
+
    obj = Run()
    main()
 

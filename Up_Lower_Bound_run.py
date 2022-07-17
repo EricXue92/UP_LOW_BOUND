@@ -21,7 +21,7 @@ class Run:
    No_PCGrad = UpperLowerBound()
    PCGrad = UpperLowerBound()
 
-   epochs = 2000
+   epochs = 100
    batch_size = 256
 
    def __init__(self):
@@ -130,18 +130,23 @@ class Run:
       plt.clf()
       # plt.show()
 
-
-if __name__ == "__main__":
-   obj = Run()
+def main():
 
    obj.run_no_pcgrad()
    obj.run_pcgrad()
    obj.print_comparison()
 
-   #Run.epochs = 2500
    # obj.run_no_pcgrad()
    # obj.run_pcgrad()
    # obj.print_comparison()
+
+
+if __name__ == "__main__":
+   Run.epochs = 20
+   obj = Run()
+   main()
+
+
 
 
 

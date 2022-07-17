@@ -6,6 +6,8 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import MaxNLocator
 
+
+# plot the ditribution 
 # def plot_data(file_name = 'no_pcgrad_pred.csv', x = 'Width'):
 
 # 	df = pd.read_csv(file_name)
@@ -52,7 +54,6 @@ plot_3d()
 
 
 
-
 # # To show the same y_slim as history_no_pcgrad_histor
 
 # dict_data = pd.read_pickle('history_pcgrad_history.pkl')
@@ -61,7 +62,7 @@ plot_3d()
 # fig = plt.figure(figsize=(10,6))
 # sns.set_style("ticks")
 # plt.xlabel("Epochs")
-# ax = sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw']])
+# ax = sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw', 'val_loss']])
 # ax.set(ylim=(0, 1.4))
 # plt.savefig(f'history_pcgrad_ylim_png', dpi = 600)
 # plt.show()

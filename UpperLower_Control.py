@@ -15,7 +15,7 @@ class UpperLower_Control(keras.Model):
     def selective_up(self, y_true, y_pred):
         indicator = K.cast(K.greater(y_pred[:, -1], 0.5), K.floatx())
 
-        ### bug 
+        ### Bug 
         width_up_loss = K.square(y_pred[:,1]-y_true[:,0])
         width_up_loss = tf.math.multiply(indicator, width_up_loss)
         width_up_loss = K.mean(width_up_loss)
@@ -53,6 +53,10 @@ class UpperLower_Control(keras.Model):
     def mpiw(self, y_true, y_pred):
         res = K.cast( K.mean(K.square( y_pred[:,0] - y_pred[:,1])), K.floatx())
         return res 
+
+    # Calculate the coverage/width value 
+    def coverage_width_rate(self,  y_true, y_pred):
+        return K.cast(K.mean(self.coverage(y_true, y_pred)/self.mpiw(y_true, y_pred)), K.floatx())
 
 #   @article{yu2020gradient,
 #   title={Gradient surgery for multi-task learning},
@@ -112,6 +116,7 @@ class UpperLower_Control(keras.Model):
         # Calculate the metrics 
         coverage_value = self.coverage(y, y_pred)
         mpiw_value = self.mpiw(y, y_pred)
+        coverage_width_rate = self.coverage_width_rate(y, y_pred)
 
         trainable_vars = self.trainable_variables
 
@@ -125,7 +130,7 @@ class UpperLower_Control(keras.Model):
 
         tf.print('Width_up_loss: ', K.mean(width_up_loss), 'Width_low_loss: ', K.mean(width_low_loss), 'Upper_penalty_loss: ',K.mean(up_penalty_loss), 
                 'Lower_penalty_loss: ',K.mean(low_penalty_loss), 'Coverage_penalty: ',K.mean(coverage_penalty),
-                'Coverage value: ', K.mean(coverage_value), 'MPIW: ', K.mean(mpiw_value ))
+                'Coverage value: ', K.mean(coverage_value), 'MPIW: ', K.mean(mpiw_value), 'Coverage_Width_Rate ', K.mean(coverage_width_rate)) 
 
         # Update weights
         self.optimizer.apply_gradients( zip(gradients, trainable_vars))

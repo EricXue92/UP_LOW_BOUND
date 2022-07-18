@@ -1,34 +1,38 @@
-import keras
-import os, sys
+import os
+import sys
+
 import pickle
-import pandas as pd
-from keras import backend as K
-from keras import optimizers
-import tensorflow as tf 
-
-from Up_Lower_Bound import UpperLowerBound
-from tensorflow.keras import callbacks
-
+import gc 
 import numpy as np
 import pandas as pd 
 import seaborn as sns
 import matplotlib.pyplot as plt 
 
-tf.random.set_seed(1)
+import tensorflow as tf
+import keras
+from keras import backend as K
+from keras import optimizers
+ 
+
+from Up_Lower_Bound import UpperLowerBound
+from tensorflow.keras import callbacks
+
+
+tf.random.set_seed(2)
 
 class Run:
 
    No_PCGrad = UpperLowerBound()
    PCGrad = UpperLowerBound()
 
-   epochs = 300
+   epochs = 5
    batch_size = 256
 
    #Stop training when a monitored metric has stopped improving
    early_stopping = callbacks.EarlyStopping(
       monitor = 'coverage_width_rate',
-      min_delta=0.001,  # an absolute change of less than min_delta, will count as no improvement.
-      patience=300,  # Number of epochs with no improvement after which training will be stopped
+      min_delta=0.0001,  # an absolute change of less than min_delta, will count as no improvement.
+      patience=30,      # 0.1* epoches Number of epochs with no improvement after which training will be stopped
       restore_best_weights=True
    )
 
@@ -60,12 +64,15 @@ class Run:
       batch_size=self.batch_size, 
       epochs= self.epochs,
       #callbacks=[Run.early_stopping], 
-      verbose=1)
+      verbose=0)
 
       # Save the training history 
       with open('history_no_pcgrad_history.pkl', 'wb') as handle:
          pickle.dump(history_no_pcgrad.history, handle, protocol=pickle.HIGHEST_PROTOCOL)
-      self.plot_training('history_no_pcgrad_history.pkl')
+
+      
+      #self.plot_training('history_no_pcgrad_history.pkl')
+
 
       no_pcgrad_pred = self.No_PCGrad_model.predict(Run.No_PCGrad.X_test)
 
@@ -93,13 +100,14 @@ class Run:
       batch_size=self.batch_size, 
       epochs= self.epochs,
       #callbacks=[Run.early_stopping], 
-      verbose=1)
+      verbose=0)
 
       with open('history_pcgrad_history.pkl', 'wb') as handle:
          pickle.dump(history_pcgrad.history, handle, protocol=pickle.HIGHEST_PROTOCOL)     
       #model.save_weights("checkpoints/{}".format(self.filename))
 
-      self.plot_training('history_pcgrad_history.pkl')
+      #self.plot_training('history_pcgrad_history.pkl')
+
       pcgrad_pred = self.PCGrad_model.predict(Run.PCGrad.X_test)
 
       df = pd.DataFrame(pcgrad_pred, columns = ['Lowerbound', 'Upbound', 'Coverage_rate'])
@@ -115,8 +123,9 @@ class Run:
       df.to_csv('pcgrad_pred.csv')
 
    def print_comparison(self):
-      res = pd.DataFrame(self.result, index = ['No_pcgrad', 'With_pcgrad'])
+      res = pd.DataFrame(self.result, index = ['No_PCGrad', 'PCGrad'])
       print(res)
+      #return res 
 
    def plot_training(self, filename):
       dict_data = pd.read_pickle(filename)  
@@ -126,25 +135,55 @@ class Run:
       sns.set_style("ticks")
       plt.title(title)
       plt.xlabel("Epochs")
-      sns.lineplot(data=df[ ['coverage', 'mpiw', 'coverage_width_rate', 'val_coverage', 'val_mpiw','val_loss', 'val_coverage_width_rate']])
+      sns.lineplot(data=df[ ['coverage', 'mpiw','val_coverage', 'val_mpiw','val_loss']])
       plt.savefig(f'{title}.png', dpi = 600)
       plt.clf()
       # plt.show()
-      
+     
 
 def main():
 
-   obj.run_no_pcgrad()
-   obj.run_pcgrad()
-   obj.print_comparison()
+   # UpperLowerBound.dataset_name, UpperLowerBound.target  = '2_nonconstant_noise.csv', 'y'
+   # obj.run_no_pcgrad()
+   # obj.run_pcgrad()
+   # obj.print_comparison()
+
+   dataset_names = ['1_constant_noise.csv','2_nonconstant_noise.csv','4_Concrete_Data.xls','5_BETAPLASMA.csv', '6_Drybulbtemperature.xlsx', '7_moisture content of raw material.xlsx', 
+   '8_steam pressure.xlsx', '9_main stem temperature.xlsx','10_reheat steam temperature.xlsx']
+
+   targets = ['y', 'y', 'Concrete compressive strength(MPa, megapascals) ','BETAPLASMA','dry bulb temperature',
+   'moisture content of raw material','steam pressure','main stem temperature','reheat steam temperature']
 
 
+   for dataset_name, target in zip(dataset_names, targets):
+      UpperLowerBound.dataset_name, UpperLowerBound.target  = dataset_name, target 
+      for i in range(2):
+         obj = Run()
+         obj.run_no_pcgrad()
+         obj.run_pcgrad()
+
+
+
+   # for i in range(2):
+   #    temp = []
+   #    for dataset_name, target in zip(dataset_names, targets):
+   #       UpperLowerBound.dataset_name, UpperLowerBound.target  = dataset_name, target 
+   #       obj = Run()
+   #       obj.run_no_pcgrad()
+   #       obj.run_pcgrad()
+   #       res = obj.print_comparison()
+   #       temp.append(res)
+   #    output = pd.concat(temp, keys=["1", "2", "3","4","5","6","7","8","9","10"])
+   #    output.to_csv(f'output_{i}.csv')
+
+
+      
 if __name__ == "__main__":
-   Run.epochs = 1000
-   #Run.batch_size = 1000
-
-   obj = Run()
+   Run.epochs = 5
+   # Run.batch_size = 1000
    main()
+
+
 
 
 

@@ -7,14 +7,37 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import MaxNLocator
 sns.set_theme(style="darkgrid")
 
+
+# plot the 'Coverage_rate' and 'Coverage_rate' distribution 
+
+def plot_Coverage_rate():
+	dataset_names = ['1_constant_noise.csv','2_nonconstant_noise.csv','4_Concrete_Data.xls','5_BETAPLASMA.csv', '6_Drybulbtemperature.xlsx', '7_moisture content of raw material.xlsx', 
+   '8_steam pressure.xlsx', '9_main stem temperature.xlsx','10_reheat steam temperature.xlsx']
+
+   for i, name in enumerate(dataset_names):
+
+   	df = pd.read_csv(f'output_{i+1}.csv')
+
+   	no_pcgrad = df.loc[['No_PCGrad']]
+   	pcgrad = df.loc[['PCGrad']]
+
+
+
+
 # Plot the ditribution 
-def plot_pred_distribution(file_name = 'no_pcgrad_pred.csv', x = 'Width'):
-	df = pd.read_csv(file_name)
-	sns.displot(data=df, x = x, kde=True)
-	sns.set_style("ticks")
-	plt.title(x)
-	plt.savefig(f'{file_name}_{x}_Distribution.png')
-	plt.show()
+def plot_pred_distribution(file_name, flag ='pcgrad_pred',  x = 'Coverage_rate'):
+
+	dataset_names = ['1_constant_noise.csv','2_nonconstant_noise.csv','4_Concrete_Data.xls','5_BETAPLASMA.csv', '6_Drybulbtemperature.xlsx', '7_moisture content of raw material.xlsx', 
+   '8_steam pressure.xlsx', '9_main stem temperature.xlsx','10_reheat steam temperature.xlsx']
+
+   for name in dataset_names:
+   	filename = f'{name}_{flag}.csv'
+		df = pd.read_csv(file_name)
+		sns.displot(data=df, x = x, kde=True)
+		sns.set_style("ticks")
+		plt.title(x)
+		plt.savefig(f'{file_name}_{x}_Distribution.png')
+	#plt.show()
 
 # val_acc is on the validation data, val_loss is a good indication of how the model performs on unseen data.
 def plot_val_loss_3D(file_name = 'history_no_pcgrad_history.pkl'):
@@ -38,7 +61,7 @@ def plot_val_loss_3D(file_name = 'history_no_pcgrad_history.pkl'):
 	ax.zaxis.set_major_locator(MaxNLocator(10))
 	fig.tight_layout()
 	plt.savefig(f'{file_name}_3D.png', dpi = 600)
-	plt.show()
+	#plt.show()
 
 # To show the same y_slim as history_no_pcgrad_histor
 def plot_pcgrad_history_with_same_yslim():
@@ -48,10 +71,10 @@ def plot_pcgrad_history_with_same_yslim():
 	fig = plt.figure(figsize=(10,6))
 	sns.set_style("ticks")
 	plt.xlabel("Epochs")
-	ax = sns.lineplot(data=df[ ['coverage', 'mpiw', 'coverage_width_rate', 'val_coverage', 'val_mpiw', 'val_loss', 'val_coverage_width_rate']])
+	ax = sns.lineplot(data=df[ ['coverage', 'mpiw', 'val_coverage', 'val_mpiw', 'val_loss']])
 	ax.set(ylim=(0, 1.4))
 	plt.savefig(f'history_pcgrad_ylim_png', dpi = 600)
-	plt.show()
+	#plt.show()
 
 def plot_Coverage_rate_Width_rate(file_name = 'no_pcgrad_pred.csv'):
 	df = pd.read_csv(file_name)
@@ -62,18 +85,18 @@ def plot_Coverage_rate_Width_rate(file_name = 'no_pcgrad_pred.csv'):
 	plt.show()
 
 def main():
-	# #Plot prediction distribution
-	# plot_pred_distribution()
-	# plot_pred_distribution(x = 'Coverage_rate')
-	# plot_pred_distribution(file_name = 'pcgrad_pred.csv')
-	# plot_pred_distribution(file_name = 'pcgrad_pred.csv', x ='Coverage_rate')
+	#Plot prediction distribution
+	plot_pred_distribution()
+	plot_pred_distribution(x = 'Coverage_rate')
+	plot_pred_distribution(file_name = 'pcgrad_pred.csv')
+	plot_pred_distribution(file_name = 'pcgrad_pred.csv', x ='Coverage_rate')
 
-	# #Plot the loss_val, val_mpiw, val_coverage
-	# plot_val_loss_3D()
-	# plot_val_loss_3D('history_pcgrad_history.pkl')
+	#Plot the loss_val, val_mpiw, val_coverage
+	plot_val_loss_3D()
+	plot_val_loss_3D('history_pcgrad_history.pkl')
 
-	# #Plot the same y_slim as history_no_pcgrad_history
-	# plot_pcgrad_history_with_same_yslim()
+	#Plot the same y_slim as history_no_pcgrad_history
+	plot_pcgrad_history_with_same_yslim()
 
 	# #plot Coverage_rate/Width
 	plot_Coverage_rate_Width_rate()

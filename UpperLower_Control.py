@@ -31,12 +31,12 @@ class UpperLower_Control(keras.Model):
 
     # Upper penalty function (upper_bound > y_true)
     def up_penalty(self, y_true,  y_pred):
-        up_penalty_loss = K.sum( K.maximum( [0.0], (y_true[:, 0] - y_pred[:, 1]))) 
+        up_penalty_loss = K.sum( K.maximum( [0.0], (y_true[:, 1] - y_pred[:, 1]))) 
         return up_penalty_loss
 
     # Lower penalty function (lower_bound < y_true)
     def low_penalty(self, y_true,  y_pred):
-        low_penalty_loss = K.sum(K.maximum( [0.0], y_pred[:,0] - y_true[:, 0] ))
+        low_penalty_loss = K.sum(K.maximum( [0.0], y_pred[:,0] - y_true[:, 1] ))
         return low_penalty_loss
 
     # Coverage penalty function
@@ -46,7 +46,7 @@ class UpperLower_Control(keras.Model):
 
     # Calculate the coverage 
     def coverage(self, y_true, y_pred):
-        coverage_value = K.cast( K.mean( (y_pred[:,1] >= y_true[:,0]) & (y_true[:,0]>=y_pred[:,0]) ), K.floatx())
+        coverage_value = K.cast( K.mean((y_pred[:,1] >= y_true[:,0]) & (y_true[:,0]>=y_pred[:,0]) ), K.floatx())
         return coverage_value
 
     # Calculate Mean predicition interval width(mpiw)
@@ -128,9 +128,9 @@ class UpperLower_Control(keras.Model):
             loss = [K.mean(width_up_loss)+K.mean(low_penalty_loss)+1/2*K.mean(coverage_penalty), K.mean(width_low_loss)+K.mean(up_penalty_loss)+1/2*K.mean(coverage_penalty)]
             gradients = self.compute_gradients_by_PCG(loss)
 
-        tf.print('Width_up_loss: ', K.mean(width_up_loss), 'Width_low_loss: ', K.mean(width_low_loss), 'Upper_penalty_loss: ',K.mean(up_penalty_loss), 
-                'Lower_penalty_loss: ',K.mean(low_penalty_loss), 'Coverage_penalty: ',K.mean(coverage_penalty),
-                'Coverage value: ', K.mean(coverage_value), 'MPIW: ', K.mean(mpiw_value), 'Coverage_Width_Rate ', K.mean(coverage_width_rate)) 
+        # tf.print('Width_up_loss: ', K.mean(width_up_loss), 'Width_low_loss: ', K.mean(width_low_loss), 'Upper_penalty_loss: ',K.mean(up_penalty_loss), 
+        #         'Lower_penalty_loss: ',K.mean(low_penalty_loss), 'Coverage_penalty: ',K.mean(coverage_penalty),
+        #         'Coverage value: ', K.mean(coverage_value), 'MPIW: ', K.mean(mpiw_value), 'Coverage_Width_Rate ', K.mean(coverage_width_rate)) 
 
         # Update weights
         self.optimizer.apply_gradients( zip(gradients, trainable_vars))
@@ -140,14 +140,5 @@ class UpperLower_Control(keras.Model):
 
         # Return a dict mapping metric names to current value
         return {m.name: m.result() for m in self.metrics}
-
-
-
-
-
-
-
-
-        
 
 

@@ -13,11 +13,12 @@ from UpperLower_Control import UpperLower_Control
 
 class UpperLowerBound:
 
-	filepath= 'dataset/'
-	
-	def __init__(self, dataset_name='Concrete_Data.xls'):
+	def __init__(self, dataset_name, target):
 
-		self.dataset_name = dataset_name 
+		self.filepath = 'dataset/'
+		self.dataset_name = dataset_name
+		self.target = target 
+
 		self._load_data()
 		self.model = self.build_model()
 
@@ -40,22 +41,21 @@ class UpperLowerBound:
 		selective = layers.Dense(16, activation='relu', kernel_initializer='normal')(curr)
 		selective = Dense(1, activation='sigmoid')(selective)
 
-		combined_outputs = Concatenate(axis=1, name="combined_output") ([low_bound, up_bound, selective])
+		combined_outputs = Concatenate(axis=1, name="combined_output") ( [low_bound, up_bound, selective] )
 
 		return UpperLower_Control(inputs, combined_outputs)
 
 	# y is the target value 
-	def _load_data(self, y = 'Concrete compressive strength(MPa, megapascals) '):
-
-		file_path = os.path.join(UpperLowerBound.filepath, self.dataset_name)
+	def _load_data(self):
+		file_path = os.path.join(self.filepath, self.dataset_name)
 
 		if file_path.split('.')[-1] == 'xls' or file_path.split('.')[-1] == 'xlsx' :
 			df_data = pd.read_excel(file_path)
 		else:
 		 	df_data = pd.read_csv(file_path)
 
-		X = df_data.drop(y, axis = 1)
-		y = df_data[y].values.reshape(-1,1)
+		X = df_data.drop(self.target, axis = 1)
+		y = df_data[self.target].values.reshape(-1,1)
 
 		# Scale data to [0,1]
 		X, y = self.scaled_data(X, y)
@@ -71,6 +71,7 @@ class UpperLowerBound:
 		# Change y based on the model 
 		self.y_train = np.repeat(y_train, [2], axis = 1)
 		self.y_test = np.repeat(y_test, [2], axis = 1)
+		
 		self.y_train = np.hstack((self.y_train, np.zeros((self.y_train.shape[0], 1), dtype=self.y_train.dtype)))
 		self.y_test = np.hstack((self.y_test, np.zeros((self.y_test.shape[0], 1), dtype=self.y_test.dtype)))
 
@@ -88,31 +89,3 @@ class UpperLowerBound:
 		if x is None:
 			x = self.X_test
 		return self.model.predict(x, batch_size)
-
-
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
